@@ -124,7 +124,7 @@ public class MobipocketHtmlBookReader extends HtmlReader {
 							}
 						}
 						myFileposReferences.add(filePosition);
-						// TODO: add hyperlink control
+						attributes.put(new ZLByteBuffer("href"), new ZLByteBuffer("&filepos" + filePosition));
 					} catch (NumberFormatException e) {
 					}
 				}
@@ -184,12 +184,21 @@ public class MobipocketHtmlBookReader extends HtmlReader {
 			if (length <= 0) {
 				break;
 			}
-			addImage("" + index, new ZLFileImage(MimeTypes.MIME_IMAGE_AUTO, Model.Book.File, offset, length));
+			addImage("" + (index + 1), new ZLFileImage(MimeTypes.MIME_IMAGE_AUTO, Model.Book.File, offset, length));
 		}
 	}
 
 	@Override
 	public void endDocumentHandler() {
+		for (Integer entry: myFileposReferences) {
+			final SortedMap<Integer,Integer> subMap =
+				myPositionToParagraph.tailMap(entry);
+			if (subMap.isEmpty()) {
+				break;
+			}
+			addHyperlinkLabel("filepos" + entry, subMap.get(subMap.firstKey()));
+		}
+
 		for (Map.Entry<Integer,String> entry : myTocEntries.entrySet()) {
 			final SortedMap<Integer,Integer> subMap =
 				myPositionToParagraph.tailMap(entry.getKey());
